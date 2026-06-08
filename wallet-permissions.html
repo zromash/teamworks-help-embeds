@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallet Permissions by Role</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #1A6AFF; --green: #009657; --bg: #ffffff; --surface: #F5F7FA;
+      --surface-2: #EAECF0; --border: #DDE1E8; --text: #0A0A0A; --text-muted: #6B7280;
+      --pill-bg: #F0F2F5; --pill-active-bg: #1A6AFF; --pill-active-text: #fff;
+      --check: #009657; --cross: #C5CAD3; --section-bg: #F5F7FA; --row-hover: #F8F9FB;
+    }
+    body { font-family: 'Manrope', sans-serif; background: var(--bg); color: var(--text); padding: 24px 20px 40px; font-size: 14px; line-height: 1.5; }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; align-items: center; }
+    .filter-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-right: 4px; }
+    .pill { display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); background: var(--pill-bg); color: var(--text-muted); font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; user-select: none; }
+    .pill:hover { border-color: #9CA3AF; color: var(--text); }
+    .pill.active { background: var(--pill-active-bg); border-color: var(--pill-active-bg); color: var(--pill-active-text); }
+    .pill.active-all { background: var(--surface-2); border-color: #9CA3AF; color: var(--text); }
+    .section-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; align-items: center; }
+    .section-pill { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; user-select: none; }
+    .section-pill:hover { border-color: #9CA3AF; color: var(--text); }
+    .section-pill.active { border-color: var(--blue); color: var(--blue); background: rgba(26,106,255,0.08); }
+    .table-wrap { border-radius: 10px; border: 1px solid var(--border); overflow: hidden; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    thead tr { background: var(--surface); border-bottom: 1px solid var(--border); }
+    thead th { padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); text-align: center; }
+    thead th:first-child { text-align: left; width: 42%; }
+    .col-header { position: relative; }
+    .col-header.highlighted { color: var(--blue) !important; }
+    .col-indicator { display: block; width: 3px; height: 16px; background: var(--blue); border-radius: 2px; margin: 0 auto 4px; opacity: 0; transition: opacity 0.15s; }
+    .col-header.highlighted .col-indicator { opacity: 1; }
+    tr.section-header td { background: var(--section-bg); padding: 8px 16px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    tbody tr:not(.section-header) { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:not(.section-header):last-child { border-bottom: none; }
+    tbody tr:not(.section-header):hover { background: var(--row-hover); }
+    tbody td { padding: 11px 16px; vertical-align: middle; }
+    tbody td:first-child { color: var(--text); font-weight: 500; font-size: 13px; }
+    tbody td:not(:first-child) { text-align: center; font-size: 16px; }
+    td.dimmed, th.dimmed { opacity: 0.25; }
+    td.highlighted-col { background: rgba(26,106,255,0.04); }
+    .check { color: var(--check); }
+    .cross { color: var(--cross); }
+    tr.hidden-row { display: none; }
+    .no-results { padding: 32px; text-align: center; color: var(--text-muted); font-size: 13px; }
+    .result-count { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+    .result-count span { color: var(--text); font-weight: 700; }
+    .footnotes { margin-top: 16px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; color: var(--text-muted); line-height: 1.8; }
+    .footnotes strong { color: var(--text); }
+    ::-webkit-scrollbar { height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #C5CAD3; border-radius: 2px; }
+  </style>
+</head>
+<body>
+<div class="filter-bar">
+  <span class="filter-label">Filter by role</span>
+  <button class="pill active-all" data-role="all">All roles</button>
+  <button class="pill" data-role="0">Admin</button>
+  <button class="pill" data-role="1">Approver</button>
+  <button class="pill" data-role="2">Requestor</button>
+  <button class="pill" data-role="3">Bookkeeper</button>
+  <button class="pill" data-role="4">Monitor</button>
+</div>
+<div class="section-filter">
+  <span class="filter-label">Section</span>
+  <button class="section-pill active" data-section="all">All</button>
+  <button class="section-pill" data-section="Banking">Banking</button>
+  <button class="section-pill" data-section="Security">Security</button>
+  <button class="section-pill" data-section="Athlete Payments">Athlete Payments</button>
+  <button class="section-pill" data-section="User Management">User Management</button>
+  <button class="section-pill" data-section="Cards">Cards</button>
+  <button class="section-pill" data-section="Integrations">Integrations</button>
+</div>
+<div class="result-count" id="resultCount"></div>
+<div class="table-wrap">
+  <table id="permTable">
+    <thead>
+      <tr>
+        <th>Permission</th>
+        <th class="col-header" data-col="0"><span class="col-indicator"></span>Admin</th>
+        <th class="col-header" data-col="1"><span class="col-indicator"></span>Approver</th>
+        <th class="col-header" data-col="2"><span class="col-indicator"></span>Requestor</th>
+        <th class="col-header" data-col="3"><span class="col-indicator"></span>Bookkeeper</th>
+        <th class="col-header" data-col="4"><span class="col-indicator"></span>Monitor</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="section-header" data-section="Banking"><td colspan="6">Banking</td></tr>
+      <tr data-section="Banking"><td>View account info, balance and transactions</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Banking"><td>Download statements and documents</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Banking"><td>Move money to/from external and other Wallet accounts</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Banking"><td>Send money via ACH/Wire</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Banking"><td>Deposit checks</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Banking"><td>Manage external (non-athlete) payment recipients</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr class="section-header" data-section="Security"><td colspan="6">Security</td></tr>
+      <tr data-section="Security"><td>Update account settings</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Create approval chains per payment type</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Set the required number of approvers for payment types without an approval chain</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Set the replenishment threshold value</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Upload documents</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Manage approval chains for payment types</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Set Per Diem preset amounts</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr class="section-header" data-section="Athlete Payments"><td colspan="6">Athlete Payments</td></tr>
+      <tr data-section="Athlete Payments"><td>View athlete payee recipients</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Create payment requests</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Approve or deny payment requests originated by another user</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Manage payment requests ☨</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>View athlete payments for a payment type where the user is part of the request and approval ☨</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>View athlete payments for a payment type where the user is not part of the request and approval</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Approve and reject payment requests where the user is part of the approval chain</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Approve payment requests where the user is not part of the approval chain</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Reject payment requests where the user is not part of the approval chain</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Duplicate a rejected payment request</td><td class="check">✓**</td><td class="check">✓**</td><td class="check">✓**</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Manage athlete payments</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Export payment transactions</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Create a Clawback request on a Per Diem payment that was already sent ☨</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr class="section-header" data-section="User Management"><td colspan="6">User Management</td></tr>
+      <tr data-section="User Management"><td>Invite users</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="User Management"><td>Manage roles and permissions</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="User Management"><td>View onboarding status of all Wallet users</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr class="section-header" data-section="Cards"><td colspan="6">Cards</td></tr>
+      <tr data-section="Cards"><td>Get a card</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Cards"><td>Manage cards</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr class="section-header" data-section="Integrations"><td colspan="6">Integrations</td></tr>
+      <tr data-section="Integrations"><td>Approve integration with other Teamworks products (e.g., Influencer, GM, Hub, etc.)</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+    </tbody>
+  </table>
+  <div class="no-results" id="noResults" style="display:none;">No permissions match these filters.</div>
+</div>
+<div class="footnotes">
+  <strong>*</strong> Permission is available only if the feature is enabled. Only the Account Owner can request a feature to be enabled or disabled via support@teamworks.com.<br>
+  <strong>**</strong> Users can only duplicate rejected requests they created.<br>
+  <strong>☨</strong> Users can only see data associated with payment requests they've created, can see payment request data they are part of the approval chain for (if an Approver), and can see payment request data for any payment type without an approval chain set (if an Approver).
+</div>
+<script>
+  const ROLES = ['Admin','Approver','Requestor','Bookkeeper','Monitor'];
+  let activeRole = 'all';
+  let activeSection = 'all';
+  const rolePills = document.querySelectorAll('.pill[data-role]');
+  const sectionPills = document.querySelectorAll('.section-pill');
+  const colHeaders = document.querySelectorAll('thead th.col-header');
+  const resultCount = document.getElementById('resultCount');
+  const noResults = document.getElementById('noResults');
+  function applyFilters() {
+    const allDataRows = document.querySelectorAll('tbody tr:not(.section-header)');
+    const allSectionRows = document.querySelectorAll('tbody tr.section-header');
+    colHeaders.forEach(th => {
+      const col = parseInt(th.dataset.col);
+      if (activeRole === 'all') { th.classList.remove('highlighted', 'dimmed'); }
+      else { th.classList.toggle('highlighted', col === parseInt(activeRole)); th.classList.toggle('dimmed', col !== parseInt(activeRole)); }
+    });
+    const visibleSections = new Set();
+    let visibleCount = 0;
+    allDataRows.forEach(row => {
+      const sec = row.dataset.section;
+      const sectionMatch = activeSection === 'all' || sec === activeSection;
+      let roleMatch = true;
+      if (activeRole !== 'all') { const cells = row.querySelectorAll('td:not(:first-child)'); const cell = cells[parseInt(activeRole)]; roleMatch = cell && cell.classList.contains('check'); }
+      const visible = sectionMatch && roleMatch;
+      row.classList.toggle('hidden-row', !visible);
+      if (visible) { visibleSections.add(sec); visibleCount++; }
+      const dataCells = row.querySelectorAll('td:not(:first-child)');
+      dataCells.forEach((cell, i) => {
+        if (activeRole === 'all') { cell.classList.remove('dimmed', 'highlighted-col'); }
+        else { cell.classList.toggle('dimmed', i !== parseInt(activeRole)); cell.classList.toggle('highlighted-col', i === parseInt(activeRole)); }
+      });
+    });
+    allSectionRows.forEach(row => {
+      const sec = row.dataset.section;
+      row.classList.toggle('hidden-row', (activeSection !== 'all' && sec !== activeSection) || !visibleSections.has(sec));
+    });
+    if (activeRole === 'all' && activeSection === 'all') { resultCount.textContent = ''; }
+    else { const roleLabel = activeRole === 'all' ? 'All roles' : ROLES[parseInt(activeRole)]; resultCount.innerHTML = `Showing <span>${visibleCount}</span> permission${visibleCount !== 1 ? 's' : ''} — ${roleLabel}${activeSection !== 'all' ? ' · ' + activeSection : ''}`; }
+    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+  rolePills.forEach(pill => { pill.addEventListener('click', () => { rolePills.forEach(p => p.classList.remove('active', 'active-all')); activeRole = pill.dataset.role; pill.classList.add(activeRole === 'all' ? 'active-all' : 'active'); applyFilters(); }); });
+  sectionPills.forEach(pill => { pill.addEventListener('click', () => { sectionPills.forEach(p => p.classList.remove('active')); pill.classList.add('active'); activeSection = pill.dataset.section; applyFilters(); }); });
+  applyFilters();
+</script>
+</body>
+</html>
+HTMLEOFcat > ~/Downloads/teamworks-help-embeds/wallet-permissions.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallet Permissions by Role</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #1A6AFF; --green: #009657; --bg: #ffffff; --surface: #F5F7FA;
+      --surface-2: #EAECF0; --border: #DDE1E8; --text: #0A0A0A; --text-muted: #6B7280;
+      --pill-bg: #F0F2F5; --pill-active-bg: #1A6AFF; --pill-active-text: #fff;
+      --check: #009657; --cross: #C5CAD3; --section-bg: #F5F7FA; --row-hover: #F8F9FB;
+    }
+    body { font-family: 'Manrope', sans-serif; background: var(--bg); color: var(--text); padding: 24px 20px 40px; font-size: 14px; line-height: 1.5; }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; align-items: center; }
+    .filter-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-right: 4px; }
+    .pill { display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); background: var(--pill-bg); color: var(--text-muted); font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; user-select: none; }
+    .pill:hover { border-color: #9CA3AF; color: var(--text); }
+    .pill.active { background: var(--pill-active-bg); border-color: var(--pill-active-bg); color: var(--pill-active-text); }
+    .pill.active-all { background: var(--surface-2); border-color: #9CA3AF; color: var(--text); }
+    .section-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; align-items: center; }
+    .section-pill { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; user-select: none; }
+    .section-pill:hover { border-color: #9CA3AF; color: var(--text); }
+    .section-pill.active { border-color: var(--blue); color: var(--blue); background: rgba(26,106,255,0.08); }
+    .table-wrap { border-radius: 10px; border: 1px solid var(--border); overflow: hidden; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    thead tr { background: var(--surface); border-bottom: 1px solid var(--border); }
+    thead th { padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); text-align: center; }
+    thead th:first-child { text-align: left; width: 42%; }
+    .col-header { position: relative; }
+    .col-header.highlighted { color: var(--blue) !important; }
+    .col-indicator { display: block; width: 3px; height: 16px; background: var(--blue); border-radius: 2px; margin: 0 auto 4px; opacity: 0; transition: opacity 0.15s; }
+    .col-header.highlighted .col-indicator { opacity: 1; }
+    tr.section-header td { background: var(--section-bg); padding: 8px 16px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    tbody tr:not(.section-header) { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:not(.section-header):last-child { border-bottom: none; }
+    tbody tr:not(.section-header):hover { background: var(--row-hover); }
+    tbody td { padding: 11px 16px; vertical-align: middle; }
+    tbody td:first-child { color: var(--text); font-weight: 500; font-size: 13px; }
+    tbody td:not(:first-child) { text-align: center; font-size: 16px; }
+    td.dimmed, th.dimmed { opacity: 0.25; }
+    td.highlighted-col { background: rgba(26,106,255,0.04); }
+    .check { color: var(--check); }
+    .cross { color: var(--cross); }
+    tr.hidden-row { display: none; }
+    .no-results { padding: 32px; text-align: center; color: var(--text-muted); font-size: 13px; }
+    .result-count { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+    .result-count span { color: var(--text); font-weight: 700; }
+    .footnotes { margin-top: 16px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; color: var(--text-muted); line-height: 1.8; }
+    .footnotes strong { color: var(--text); }
+    ::-webkit-scrollbar { height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #C5CAD3; border-radius: 2px; }
+  </style>
+</head>
+<body>
+<div class="filter-bar">
+  <span class="filter-label">Filter by role</span>
+  <button class="pill active-all" data-role="all">All roles</button>
+  <button class="pill" data-role="0">Admin</button>
+  <button class="pill" data-role="1">Approver</button>
+  <button class="pill" data-role="2">Requestor</button>
+  <button class="pill" data-role="3">Bookkeeper</button>
+  <button class="pill" data-role="4">Monitor</button>
+</div>
+<div class="section-filter">
+  <span class="filter-label">Section</span>
+  <button class="section-pill active" data-section="all">All</button>
+  <button class="section-pill" data-section="Banking">Banking</button>
+  <button class="section-pill" data-section="Security">Security</button>
+  <button class="section-pill" data-section="Athlete Payments">Athlete Payments</button>
+  <button class="section-pill" data-section="User Management">User Management</button>
+  <button class="section-pill" data-section="Cards">Cards</button>
+  <button class="section-pill" data-section="Integrations">Integrations</button>
+</div>
+<div class="result-count" id="resultCount"></div>
+<div class="table-wrap">
+  <table id="permTable">
+    <thead>
+      <tr>
+        <th>Permission</th>
+        <th class="col-header" data-col="0"><span class="col-indicator"></span>Admin</th>
+        <th class="col-header" data-col="1"><span class="col-indicator"></span>Approver</th>
+        <th class="col-header" data-col="2"><span class="col-indicator"></span>Requestor</th>
+        <th class="col-header" data-col="3"><span class="col-indicator"></span>Bookkeeper</th>
+        <th class="col-header" data-col="4"><span class="col-indicator"></span>Monitor</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="section-header" data-section="Banking"><td colspan="6">Banking</td></tr>
+      <tr data-section="Banking"><td>View account info, balance and transactions</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Banking"><td>Download statements and documents</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Banking"><td>Move money to/from external and other Wallet accounts</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Banking"><td>Send money via ACH/Wire</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Banking"><td>Deposit checks</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Banking"><td>Manage external (non-athlete) payment recipients</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr class="section-header" data-section="Security"><td colspan="6">Security</td></tr>
+      <tr data-section="Security"><td>Update account settings</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Create approval chains per payment type</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Set the required number of approvers for payment types without an approval chain</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Set the replenishment threshold value</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Upload documents</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Manage approval chains for payment types</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Security"><td>Set Per Diem preset amounts</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr class="section-header" data-section="Athlete Payments"><td colspan="6">Athlete Payments</td></tr>
+      <tr data-section="Athlete Payments"><td>View athlete payee recipients</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Create payment requests</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Approve or deny payment requests originated by another user</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Manage payment requests ☨</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>View athlete payments for a payment type where the user is part of the request and approval ☨</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>View athlete payments for a payment type where the user is not part of the request and approval</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Approve and reject payment requests where the user is part of the approval chain</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Approve payment requests where the user is not part of the approval chain</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Reject payment requests where the user is not part of the approval chain</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Duplicate a rejected payment request</td><td class="check">✓**</td><td class="check">✓**</td><td class="check">✓**</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Manage athlete payments</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Export payment transactions</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td></tr>
+      <tr data-section="Athlete Payments"><td>Create a Clawback request on a Per Diem payment that was already sent ☨</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr class="section-header" data-section="User Management"><td colspan="6">User Management</td></tr>
+      <tr data-section="User Management"><td>Invite users</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="User Management"><td>Manage roles and permissions</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="User Management"><td>View onboarding status of all Wallet users</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr class="section-header" data-section="Cards"><td colspan="6">Cards</td></tr>
+      <tr data-section="Cards"><td>Get a card</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr data-section="Cards"><td>Manage cards</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+      <tr class="section-header" data-section="Integrations"><td colspan="6">Integrations</td></tr>
+      <tr data-section="Integrations"><td>Approve integration with other Teamworks products (e.g., Influencer, GM, Hub, etc.)</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
+    </tbody>
+  </table>
+  <div class="no-results" id="noResults" style="display:none;">No permissions match these filters.</div>
+</div>
+<div class="footnotes">
+  <strong>*</strong> Permission is available only if the feature is enabled. Only the Account Owner can request a feature to be enabled or disabled via support@teamworks.com.<br>
+  <strong>**</strong> Users can only duplicate rejected requests they created.<br>
+  <strong>☨</strong> Users can only see data associated with payment requests they've created, can see payment request data they are part of the approval chain for (if an Approver), and can see payment request data for any payment type without an approval chain set (if an Approver).
+</div>
+<script>
+  const ROLES = ['Admin','Approver','Requestor','Bookkeeper','Monitor'];
+  let activeRole = 'all';
+  let activeSection = 'all';
+  const rolePills = document.querySelectorAll('.pill[data-role]');
+  const sectionPills = document.querySelectorAll('.section-pill');
+  const colHeaders = document.querySelectorAll('thead th.col-header');
+  const resultCount = document.getElementById('resultCount');
+  const noResults = document.getElementById('noResults');
+  function applyFilters() {
+    const allDataRows = document.querySelectorAll('tbody tr:not(.section-header)');
+    const allSectionRows = document.querySelectorAll('tbody tr.section-header');
+    colHeaders.forEach(th => {
+      const col = parseInt(th.dataset.col);
+      if (activeRole === 'all') { th.classList.remove('highlighted', 'dimmed'); }
+      else { th.classList.toggle('highlighted', col === parseInt(activeRole)); th.classList.toggle('dimmed', col !== parseInt(activeRole)); }
+    });
+    const visibleSections = new Set();
+    let visibleCount = 0;
+    allDataRows.forEach(row => {
+      const sec = row.dataset.section;
+      const sectionMatch = activeSection === 'all' || sec === activeSection;
+      let roleMatch = true;
+      if (activeRole !== 'all') { const cells = row.querySelectorAll('td:not(:first-child)'); const cell = cells[parseInt(activeRole)]; roleMatch = cell && cell.classList.contains('check'); }
+      const visible = sectionMatch && roleMatch;
+      row.classList.toggle('hidden-row', !visible);
+      if (visible) { visibleSections.add(sec); visibleCount++; }
+      const dataCells = row.querySelectorAll('td:not(:first-child)');
+      dataCells.forEach((cell, i) => {
+        if (activeRole === 'all') { cell.classList.remove('dimmed', 'highlighted-col'); }
+        else { cell.classList.toggle('dimmed', i !== parseInt(activeRole)); cell.classList.toggle('highlighted-col', i === parseInt(activeRole)); }
+      });
+    });
+    allSectionRows.forEach(row => {
+      const sec = row.dataset.section;
+      row.classList.toggle('hidden-row', (activeSection !== 'all' && sec !== activeSection) || !visibleSections.has(sec));
+    });
+    if (activeRole === 'all' && activeSection === 'all') { resultCount.textContent = ''; }
+    else { const roleLabel = activeRole === 'all' ? 'All roles' : ROLES[parseInt(activeRole)]; resultCount.innerHTML = `Showing <span>${visibleCount}</span> permission${visibleCount !== 1 ? 's' : ''} — ${roleLabel}${activeSection !== 'all' ? ' · ' + activeSection : ''}`; }
+    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+  rolePills.forEach(pill => { pill.addEventListener('click', () => { rolePills.forEach(p => p.classList.remove('active', 'active-all')); activeRole = pill.dataset.role; pill.classList.add(activeRole === 'all' ? 'active-all' : 'active'); applyFilters(); }); });
+  sectionPills.forEach(pill => { pill.addEventListener('click', () => { sectionPills.forEach(p => p.classList.remove('active')); pill.classList.add('active'); activeSection = pill.dataset.section; applyFilters(); }); });
+  applyFilters();
+</script>
+</body>
+</html>

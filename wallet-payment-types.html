@@ -1,3 +1,5 @@
+cd ~/Downloads/teamworks-help-embeds
+cat > ~/Downloads/teamworks-help-embeds/wallet-payment-types.html << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +11,9 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --blue: #1A6AFF; --green: #009657; --bg: #ffffff; --surface: #F5F7FA; --surface-2: #EAECF0; --border: #DDE1E8; --text: #0A0A0A; --text-muted: #6B7280; --pill-bg: #F0F2F5; --pill-active-bg: #1A6AFF; --pill-active-text: #fff; --row-hover: #F8F9FB; }
     body { font-family: 'Manrope', sans-serif; background: var(--bg); color: var(--text); padding: 24px 20px 40px; font-size: 14px; line-height: 1.5; }
+    .table-header { margin-bottom: 20px; }
+    .table-header h2 { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .table-header p { font-size: 13px; color: var(--text-muted); }
     .filters { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px; align-items: flex-start; }
     .filter-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .filter-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-right: 2px; white-space: nowrap; }
@@ -40,6 +45,10 @@
   </style>
 </head>
 <body>
+<div class="table-header">
+  <h2>Payment type reference</h2>
+  <p>Select the options below to filter results for specific payment types, tax forms, and supported athletes.</p>
+</div>
 <div class="filters">
   <div class="filter-group">
     <span class="filter-label">Taxable</span>
@@ -73,12 +82,7 @@
   <table>
     <thead>
       <tr>
-        <th>Payment Type</th>
-        <th>Taxable</th>
-        <th>Domestic Form</th>
-        <th>Intl. Form</th>
-        <th>Intl. Supported</th>
-        <th>Notes</th>
+        <th>Payment Type</th><th>Taxable</th><th>Domestic Form</th><th>Intl. Form</th><th>Intl. Supported</th><th>Notes</th>
       </tr>
     </thead>
     <tbody id="tableBody">

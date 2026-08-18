@@ -140,9 +140,21 @@
       if (filter === 'domestic') activeDomestic = value;
       if (filter === 'intlform') activeIntlForm = value;
       applyFilters();
+      sendHeight();
     });
   });
   applyFilters();
+
+  function sendHeight() {
+    const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    window.parent.postMessage({ type: 'iframeHeight', height: height + 20 }, '*');
+  }
+  window.addEventListener('load', sendHeight);
+  window.addEventListener('resize', sendHeight);
+  if (window.ResizeObserver) {
+    new ResizeObserver(sendHeight).observe(document.body);
+  }
+  sendHeight();
 </script>
 </body>
 </html>

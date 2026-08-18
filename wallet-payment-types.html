@@ -147,6 +147,7 @@
 
   function sendHeight() {
     const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    console.log('[embed] sending height', height + 20);
     window.parent.postMessage({ type: 'iframeHeight', height: height + 20 }, '*');
   }
   window.addEventListener('load', sendHeight);

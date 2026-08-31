@@ -177,9 +177,20 @@
     else { const roleLabel = activeRole === 'all' ? 'All roles' : ROLES[parseInt(activeRole)]; resultCount.innerHTML = `Showing <span>${visibleCount}</span> permission${visibleCount !== 1 ? 's' : ''} — ${roleLabel}${activeSection !== 'all' ? ' · ' + activeSection : ''}`; }
     noResults.style.display = visibleCount === 0 ? 'block' : 'none';
   }
-  rolePills.forEach(pill => { pill.addEventListener('click', () => { rolePills.forEach(p => p.classList.remove('active', 'active-all')); activeRole = pill.dataset.role; pill.classList.add(activeRole === 'all' ? 'active-all' : 'active'); applyFilters(); }); });
-  sectionPills.forEach(pill => { pill.addEventListener('click', () => { sectionPills.forEach(p => p.classList.remove('active')); pill.classList.add('active'); activeSection = pill.dataset.section; applyFilters(); }); });
+  rolePills.forEach(pill => { pill.addEventListener('click', () => { rolePills.forEach(p => p.classList.remove('active', 'active-all')); activeRole = pill.dataset.role; pill.classList.add(activeRole === 'all' ? 'active-all' : 'active'); applyFilters(); sendHeight(); }); });
+  sectionPills.forEach(pill => { pill.addEventListener('click', () => { sectionPills.forEach(p => p.classList.remove('active')); pill.classList.add('active'); activeSection = pill.dataset.section; applyFilters(); sendHeight(); }); });
   applyFilters();
+
+  function sendHeight() {
+    const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    window.parent.postMessage({ type: 'iframeHeight', height: height + 20 }, '*');
+  }
+  window.addEventListener('load', sendHeight);
+  window.addEventListener('resize', sendHeight);
+  if (window.ResizeObserver) {
+    new ResizeObserver(sendHeight).observe(document.body);
+  }
+  sendHeight();
 </script>
 </body>
 </html>

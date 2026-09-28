@@ -22,7 +22,7 @@
     .result-count { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
     .result-count span { color: var(--text); font-weight: 700; }
     .table-wrap { border-radius: 10px; border: 1px solid var(--border); overflow: hidden; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 860px; }
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
     thead tr { background: var(--surface); border-bottom: 1px solid var(--border); }
     thead th { padding: 11px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); text-align: left; }
     tbody tr.main-row { border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
@@ -35,7 +35,7 @@
     .badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; }
     .badge-yes { background: #e7f3ef; color: #007a52; border: 1px solid #009657; }
     .badge-no { background: #fde8e8; color: #b91c1c; border: 1px solid #dc2626; }
-    .badge-neutral { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+    .badge-neutral { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); white-space: normal; }
     .desc-cell { color: var(--text-muted); font-size: 12px; max-width: 240px; }
     .expand-toggle { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); font-size: 12px; font-weight: 700; transition: transform 0.15s ease, background 0.15s ease; }
     tr.main-row.expanded .expand-toggle { background: var(--pill-active-bg); border-color: var(--pill-active-bg); color: #fff; transform: rotate(45deg); }
@@ -74,15 +74,15 @@
   <div class="filter-group">
     <span class="filter-label">Dropdown Visibility</span>
     <button class="pill active-all" data-filter="dropdown" data-value="all">All</button>
-    <button class="pill" data-filter="dropdown" data-value="yes">Visible</button>
+    <button class="pill" data-filter="dropdown" data-value="yes">Yes</button>
     <button class="pill" data-filter="dropdown" data-value="influencer">Influencer Exchange Only</button>
-    <button class="pill" data-filter="dropdown" data-value="no">Hidden</button>
+    <button class="pill" data-filter="dropdown" data-value="no">No</button>
   </div>
   <div class="filter-group">
-    <span class="filter-label">Intl. Requests</span>
-    <button class="pill active-all" data-filter="intl" data-value="all">All</button>
-    <button class="pill" data-filter="intl" data-value="allowed">Allowed</button>
-    <button class="pill" data-filter="intl" data-value="restricted">Restricted</button>
+    <span class="filter-label">Prevent Intl. Requests</span>
+    <button class="pill active-all" data-filter="preventintl" data-value="all">All</button>
+    <button class="pill" data-filter="preventintl" data-value="yes">Yes</button>
+    <button class="pill" data-filter="preventintl" data-value="no">No</button>
   </div>
 </div>
 <div class="result-count" id="resultCount"></div>
@@ -90,7 +90,7 @@
   <table>
     <thead>
       <tr>
-        <th></th><th>Payment Type</th><th>Brief Description</th><th>Taxable (Domestic)</th><th>Domestic Form</th><th>Intl. Form</th><th>Dropdown Visibility</th><th>Intl. Requests</th>
+        <th></th><th>Payment Type</th><th>Brief Description</th><th>Taxable (Domestic)</th><th>Domestic Form</th><th>Intl. Form</th><th>Dropdown Visibility</th><th>Prevent Intl. Requests</th>
       </tr>
     </thead>
     <tbody id="tableBody"></tbody>
@@ -100,41 +100,440 @@
 <p class="footnote">International support for Rev Share Royalties and NIL Royalties requires a Services Agreement designating Teamworks as withholding agent, and payments must originate from a Wallet organization managed by Teamworks. State tax reportability marked "TBD" is still being determined internally.</p>
 <script>
   const paymentTypes = [
-    { name: 'Rev Share Royalties', brief: 'Taxable payments for royalties earned through revenue sharing agreements with the institution.', full: "Taxable payments for royalties earned through revenue sharing agreements with the institution. Rev Share Royalties income is taxable and will appear on a domestic athlete's 1099-K and an international athlete's 1042-S if Teamworks was elected as the withholding agent.", dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'yes', taxIntlNote: 'We support if from Wallet Org with Services Agreement in Place with Teamworks as Withholding Agent and payment comes from GM.', domesticForm: '1099-K', domesticKey: '1099-k', intlForm: '1042-S (12-18)', intlKey: '1042-s', stateDomestic: 'TBD', stateIntl: 'TBD', incomeCategory: '12', incomeSubtype: '18', processing: '9 AM, 9 PM' },
-    { name: 'Rev Share Services', brief: 'Taxable payments for services provided under revenue sharing agreements with the institution.', full: "Taxable payments for services provided under revenue sharing agreements with the institution. Rev Share Services income is taxable and will appear on a domestic athlete's 1099-K. Teamworks does not allow international athletes to receive this payment type due to U.S. student Visa restrictions.", dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'yes', subtype: null, taxDomestic: 'yes', taxIntlNote: 'No, we don’t support "services" oriented payment types to non-U.S. citizens.', domesticForm: '1099-K', domesticKey: '1099-k', intlForm: "We don’t support", intlKey: 'unsupported', stateDomestic: 'Not Required', stateIntl: 'Not Required', incomeCategory: '17', incomeSubtype: '21', processing: '9 AM, 9 PM' },
-    { name: 'NIL Royalties', brief: 'Taxable payments for royalties earned through Name, Image, and Likeness agreements and activities.', full: "Taxable payments for royalties earned through Name, Image, and Likeness agreements and activities. NIL Royalties income is taxable and will appear on a domestic athlete's 1099-K and an international athlete's 1042-S if Teamworks was elected as the withholding agent.", dropdown: 'influencer', dropdownLabel: 'No (Only visible in Influencer Exchange)', preventIntl: 'no', subtype: null, taxDomestic: 'yes', taxIntlNote: 'We support if from Wallet Org with Services Agreement in Place with Teamworks as Withholding Agent and payment comes from GM.', domesticForm: '1099-K', domesticKey: '1099-k', intlForm: '1042-S (12-18)', intlKey: '1042-s', stateDomestic: 'TBD', stateIntl: 'TBD', incomeCategory: '12', incomeSubtype: '18', processing: '9 AM, 9 PM' },
-    { name: 'NIL Services', brief: 'Taxable payments for services provided through Name, Image, and Likeness agreements and activities.', full: "Taxable payments for services provided through Name, Image, and Likeness agreements and activities. NIL Services income is taxable and will appear on a domestic athlete's 1099-K. Teamworks does not allow international athletes to receive this payment type due to U.S. student Visa restrictions.", dropdown: 'influencer', dropdownLabel: 'No (Only visible in Influencer Exchange)', preventIntl: 'yes', subtype: null, taxDomestic: 'yes', taxIntlNote: 'No, we don’t support "services" oriented payment types to non-U.S. citizens.', domesticForm: '1099-K', domesticKey: '1099-k', intlForm: "We don’t support", intlKey: 'unsupported', stateDomestic: 'Not Required', stateIntl: 'Not Required', incomeCategory: '17', incomeSubtype: '21', processing: '9 AM, 9 PM' },
-    { name: 'Per Diem Allowance', brief: 'Non-taxable allowance covering meals, lodging, and incidentals during authorized travel periods.', full: 'Non-taxable allowance covering meals and incidentals during authorized travel periods. Per Diem Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.', dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: 'Breakfast, Lunch, Dinner, Snack, Incidentals, Misc', taxDomestic: 'no', taxIntlNote: 'No', domesticForm: '—', domesticKey: 'none', intlForm: '—', intlKey: 'none', stateDomestic: 'Not Required', stateIntl: 'Not Required', incomeCategory: 'N/A', incomeSubtype: 'N/A', processing: '6 AM, 9 AM, 2 PM, 9 PM' },
-    { name: 'Vacation Period Allowance', brief: 'Non-taxable allowance covering meals, lodging, and incidentals during authorized academic year vacation periods.', full: 'Non-taxable allowance covering meals, lodging, and incidentals during authorized academic year vacation periods. Vacation Period Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.', dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: 'Breakfast, Lunch, Dinner, Snack, Incidentals, Misc', taxDomestic: 'no', taxIntlNote: 'No', domesticForm: '—', domesticKey: 'none', intlForm: '—', intlKey: 'none', stateDomestic: 'Not Required', stateIntl: 'Not Required', incomeCategory: 'N/A', incomeSubtype: 'N/A', processing: '6 AM, 9 AM, 2 PM, 9 PM' },
-    { name: 'Housing', brief: 'Taxable payments provided to cover housing and lodging expenses.', full: "Taxable payments provided to cover student-athlete housing and lodging expenses. Housing income is taxable and will appear on a domestic athlete's 1098-T and an international athlete's 1042-S. Under federal law, Teamworks is not able to issue Form 1098-T. Form 1098-T can only be issued by a university. The 1042-S will be issued by Teamworks if Teamworks was elected as the withholding agent.", dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'yes', taxIntlNote: 'Yes', domesticForm: '1098-T (Not filed by Teamworks)', domesticKey: '1098-t', intlForm: '1042-S (16-6)', intlKey: '1042-s', stateDomestic: '—', stateIntl: '—', incomeCategory: '16', incomeSubtype: '6', processing: '9 AM, 9 PM' },
-    { name: 'Housing Allowance', brief: 'Non-taxable allowance provided to cover housing and lodging expenses.', full: 'Non-taxable allowance provided to cover student-athlete housing and lodging expenses. Housing Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.', dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'no', taxIntlNote: 'No', domesticForm: '—', domesticKey: 'none', intlForm: '—', intlKey: 'none', stateDomestic: 'Not Required', stateIntl: 'Not Required', incomeCategory: 'N/A', incomeSubtype: 'N/A', processing: '9 AM, 9 PM' },
-    { name: 'Alston', brief: "Taxable non-qualified education-related awards authorized under the Supreme Court's Alston ruling.", full: "Taxable non-qualified education-related awards authorized under the Supreme Court's Alston ruling. Alston income is taxable and will appear on a domestic athlete's 1098-T and an international athlete's 1042-S. Under federal law, Teamworks is not able to issue Form 1098-T. Form 1098-T can only be issued by a university. The 1042-S will be issued by Teamworks if Teamworks was elected as the withholding agent.", dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'yes', taxIntlNote: 'Yes', domesticForm: '1098-T (Not filed by Teamworks)', domesticKey: '1098-t', intlForm: '1042-S (16-10)', intlKey: '1042-s', stateDomestic: '—', stateIntl: '—', incomeCategory: '16', incomeSubtype: '10', processing: '9 AM, 9 PM' },
-    { name: 'Alston Allowance', brief: "Non-taxable qualified education-related benefits authorized under the Supreme Court's Alston ruling.", full: "Non-taxable qualified education-related benefits authorized under the Supreme Court's Alston ruling. Alston Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.", dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'no', taxIntlNote: 'No', domesticForm: '1098-T if administered as scholarship (Not filed by Teamworks)', domesticKey: '1098-t', intlForm: 'Not Required', intlKey: 'not-required', stateDomestic: 'Not Required', stateIntl: 'Not Required', incomeCategory: 'N/A', incomeSubtype: 'N/A', processing: '9 AM, 9 PM' },
-    { name: 'Post-Season Travel Disbursement', brief: 'Taxable payments provided to cover post-season transportation and other travel-related expenses.', full: "Taxable payments provided to cover post-season transportation and other travel-related expenses. Post-Season Travel Disbursement income is taxable and will appear on a domestic athlete's 1099-K and an international athlete's 1042-S if Teamworks was elected as the withholding agent.", dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'yes', taxIntlNote: 'Yes', domesticForm: '1099-K', domesticKey: '1099-k', intlForm: '1042-S (16-4)', intlKey: '1042-s', stateDomestic: '—', stateIntl: '—', incomeCategory: '16', incomeSubtype: '4', processing: '9 AM, 9 PM' },
-    { name: 'Travel Allowance', brief: 'Non-taxable payment provided to cover travel related expenses.', full: 'Non-taxable payment provided to cover travel related expenses. Travel Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.', dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'no', taxIntlNote: 'No', domesticForm: '—', domesticKey: 'none', intlForm: '—', intlKey: 'none', stateDomestic: 'Not Required', stateIntl: 'Not Required', incomeCategory: 'N/A', incomeSubtype: 'N/A', processing: '9 AM, 9 PM' },
-    { name: 'Host Allowance', brief: 'Non-taxable reimbursements to official hosts for expenses during prospective recruit visits.', full: 'Non-taxable reimbursements to official hosts for expenses during prospective recruit visits. Host Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.', dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'no', taxIntlNote: 'No', domesticForm: '—', domesticKey: 'none', intlForm: '—', intlKey: 'none', stateDomestic: 'Not Required', stateIntl: 'Not Required', incomeCategory: 'N/A', incomeSubtype: 'N/A', processing: '9 AM, 9 PM' },
-    { name: 'Reimbursement', brief: 'Non-taxable payments to cover documented out-of-pocket expenses previously incurred.', full: 'Non-taxable payments to cover documented out-of-pocket expenses previously incurred. Reimbursement payments and transactions under this payment type will not be included in tax forms issued by Teamworks.', dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'no', taxIntlNote: 'No', domesticForm: '—', domesticKey: 'none', intlForm: '—', intlKey: 'none', stateDomestic: 'Not Required', stateIntl: 'Not Required', incomeCategory: 'N/A', incomeSubtype: 'N/A', processing: '9 AM, 9 PM' },
-    { name: 'Camps Services', brief: 'Taxable payments for camp related services and activities.', full: 'Taxable payments for camp related services and activities. Camps Services income is taxable and will appear on a domestic athlete’s 1099-K. Teamworks does not allow international athletes to receive this payment type due to U.S. student Visa restrictions.', dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'yes', subtype: null, taxDomestic: 'yes', taxIntlNote: "We don’t support", domesticForm: '1099-K', domesticKey: '1099-k', intlForm: "We don’t support", intlKey: 'unsupported', stateDomestic: 'TBD', stateIntl: 'TBD', incomeCategory: 'N/A', incomeSubtype: 'N/A', processing: '9 AM, 9 PM' },
-    { name: 'Meal Stipend Allowance', brief: 'Non-taxable payments to cover meals.', full: 'Non-taxable allowance provided to cover student-athlete meal expenses. Meal Stipend Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.', dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'no', taxIntlNote: 'No', domesticForm: '—', domesticKey: 'none', intlForm: '—', intlKey: 'none', stateDomestic: 'Not Required', stateIntl: 'Not Required', incomeCategory: 'N/A', incomeSubtype: 'N/A', processing: '9 AM, 9 PM' },
-    { name: 'Other Non-Qualified Scholarship Award', brief: 'Taxable non-qualified education-related awards to cover education-related expenses other than tuition, required fees, and course materials.', full: 'Taxable non-qualified education-related awards to cover education-related expenses other than tuition, required fees, and course materials. Other Non-Qualified Scholarship Award income is taxable and will appear on a domestic athlete’s 1098-T and an international athlete’s 1042-S. Under federal law, Teamworks is not able to issue Form 1098-T. Form 1098-T can only be issued by a university. The 1042-S will be issued by Teamworks if Teamworks was elected as the withholding agent.', dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'yes', taxIntlNote: 'Yes', domesticForm: '1098-T (Not filed by Teamworks)', domesticKey: '1098-t', intlForm: '1042-S (16-10)', intlKey: '1042-s', stateDomestic: 'Not Required', stateIntl: 'Not Required', incomeCategory: '16', incomeSubtype: '10', processing: '9 AM, 9 PM' },
-    { name: 'Interest Payment', brief: 'Taxable payments for interest accrued by having funds in Teamworks Wallet.', full: 'N/A — not shown to customers.', dropdown: 'no', dropdownLabel: 'No', preventIntl: 'no', subtype: null, taxDomestic: 'yes', taxIntlNote: 'Yes', domesticForm: '1099-INT', domesticKey: '1099-int', intlForm: '1042-S (29-12)', intlKey: '1042-s', stateDomestic: 'TBD', stateIntl: 'TBD', incomeCategory: '29', incomeSubtype: '12', processing: '1st of every month' },
-    { name: 'Other Awards & Prizes', brief: 'Taxable cash awards and prizes recognizing student-athlete milestones and achievements, that are not education-expense scholarships or compensation for services performed.', full: 'Taxable cash awards and prizes recognizing student-athlete milestones and achievements, that are not education-expense scholarships or compensation for services performed. Other Awards & Prizes income is taxable and will appear on a domestic athlete’s 1099-K and an international athlete’s 1042-S if Teamworks was elected as the withholding agent.', dropdown: 'yes', dropdownLabel: 'Yes', preventIntl: 'no', subtype: null, taxDomestic: 'yes', taxIntlNote: 'Yes', domesticForm: '1099-K', domesticKey: '1099-k', intlForm: '1042-S (23-25)', intlKey: '1042-s', stateDomestic: '—', stateIntl: '—', incomeCategory: '23', incomeSubtype: '25', processing: '—' },
+{
+    "name": "Rev Share Royalties",
+    "brief": "Taxable payments for royalties earned through revenue sharing agreements with the institution.",
+    "full": "Taxable payments for royalties earned through revenue sharing agreements with the institution. Rev Share Royalties income is taxable and will appear on a domestic athlete's 1099-K and an international athlete's 1042-S if Teamworks was elected as the withholding agent.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "Yes",
+    "taxDomesticKey": "yes",
+    "taxIntlNote": "We support if from Wallet Org with Services Agreement in Place with Teamworks as Withholding Agent and payment comes from GM.",
+    "domesticForm": "1099-K",
+    "domesticKey": "1099-k",
+    "intlForm": "1042-S,12-18",
+    "intlKey": "1042-s",
+    "stateDomestic": "TBD",
+    "stateIntl": "TBD",
+    "incomeCategory": "12",
+    "incomeSubtype": "18",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Rev Share Services",
+    "brief": "Taxable payments for services provided under revenue sharing agreements with the institution.",
+    "full": "Taxable payments for services provided under revenue sharing agreements with the institution. Rev Share Services income is taxable and will appear on a domestic athlete's 1099-K. Teamworks does not allow international athletes to receive this payment type due to U.S. student Visa restrictions.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "Yes",
+    "preventIntlKey": "yes",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "Yes",
+    "taxDomesticKey": "yes",
+    "taxIntlNote": "No, we don't support \"services\" oriented payment types to non u.s. citizens.",
+    "domesticForm": "1099-K",
+    "domesticKey": "1099-k",
+    "intlForm": "We don't support",
+    "intlKey": "unsupported",
+    "stateDomestic": "Not Required",
+    "stateIntl": "Not Required",
+    "incomeCategory": "17",
+    "incomeSubtype": "21",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "NIL Royalties",
+    "brief": "Taxable payments for royalties earned through Name, Image, and Likeness agreements and activities.",
+    "full": "Taxable payments for royalties earned through Name, Image, and Likeness agreements and activities. NIL Royalties income is taxable and will appear on a domestic athlete's 1099-K and an international athlete's 1042-S if Teamworks was elected as the withholding agent.",
+    "dropdownLabel": "No (Only visible in Influencer Exchange)",
+    "dropdownKey": "influencer",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "Yes",
+    "taxDomesticKey": "yes",
+    "taxIntlNote": "We support if from Wallet Org with Services Agreement in Place with Teamworks as Withholding Agent and payment comes from GM.",
+    "domesticForm": "1099-K",
+    "domesticKey": "1099-k",
+    "intlForm": "1042-S, 12-18",
+    "intlKey": "1042-s",
+    "stateDomestic": "TBD",
+    "stateIntl": "TBD",
+    "incomeCategory": "12",
+    "incomeSubtype": "18",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "NIL Services",
+    "brief": "Taxable payments for services provided through Name, Image, and Likeness agreements and activities.",
+    "full": "Taxable payments for services provided through Name, Image, and Likeness agreements and activities. NIL Services income is taxable and will appear on a domestic athlete's 1099-K. Teamworks does not allow international athletes to receive this payment type due to U.S. student Visa restrictions.",
+    "dropdownLabel": "No (Only visible in Influencer Exchange)",
+    "dropdownKey": "influencer",
+    "preventIntlLabel": "Yes",
+    "preventIntlKey": "yes",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "Yes",
+    "taxDomesticKey": "yes",
+    "taxIntlNote": "No, we don't support \"services\" oriented payment types to non u.s. citizens.",
+    "domesticForm": "1099-K",
+    "domesticKey": "1099-k",
+    "intlForm": "We don't support",
+    "intlKey": "unsupported",
+    "stateDomestic": "Not Required",
+    "stateIntl": "Not Required",
+    "incomeCategory": "17",
+    "incomeSubtype": "21",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Per Diem Allowance",
+    "brief": "Non-taxable allowance covering meals, lodging, and incidentals during authorized travel periods.",
+    "full": "Non-taxable allowance covering meals and incidentals during authorized travel periods. Per Diem Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": "Breakfast\nLunch\nDinner\nSnack\nIncidentals\nMisc",
+    "taxDomesticLabel": "No",
+    "taxDomesticKey": "no",
+    "taxIntlNote": "No",
+    "domesticForm": "-",
+    "domesticKey": "none",
+    "intlForm": "-",
+    "intlKey": "none",
+    "stateDomestic": "Not Required",
+    "stateIntl": "Not Required",
+    "incomeCategory": "N/A",
+    "incomeSubtype": "N/A",
+    "processing": "6 AM, 9 AM, 2 PM, 9 PM"
+  },
+  {
+    "name": "Vacation Period Allowance",
+    "brief": "Non-taxable allowance covering meals, lodging, and incidentals during authorized academic year vacation periods.",
+    "full": "Non-taxable allowance covering meals, lodging, and incidentals during authorized academic year vacation periods. Vacation Period Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": "Breakfast\nLunch\nDinner\nSnack\nIncidentals\nMisc",
+    "taxDomesticLabel": "No",
+    "taxDomesticKey": "no",
+    "taxIntlNote": "No",
+    "domesticForm": "-",
+    "domesticKey": "none",
+    "intlForm": "-",
+    "intlKey": "none",
+    "stateDomestic": "Not Required",
+    "stateIntl": "Not Required",
+    "incomeCategory": "N/A",
+    "incomeSubtype": "N/A",
+    "processing": "6 AM, 9 AM, 2 PM, 9 PM"
+  },
+  {
+    "name": "Housing",
+    "brief": "Taxable payments provided to cover housing and lodging expenses.",
+    "full": "Taxable payments provided to cover student-athlete housing and lodging expenses. Housing income is taxable and will appear on a domestic athlete's 1098-T and an international athlete's 1042-S. Under federal law, Teamworks is not able to issue Form 1098-T. Form 1098-T can only be issued by a university. The 1042-S will be issued by Teamworks if Teamworks was elected as the withholding agent.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "Yes",
+    "taxDomesticKey": "yes",
+    "taxIntlNote": "Yes",
+    "domesticForm": "University reports on 1098-T",
+    "domesticKey": "1098-t",
+    "intlForm": "1042-S, 16-6",
+    "intlKey": "1042-s",
+    "stateDomestic": "",
+    "stateIntl": "",
+    "incomeCategory": "16",
+    "incomeSubtype": "6",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Housing Allowance",
+    "brief": "Non-taxable allowance provided to cover housing and lodging expenses.",
+    "full": "Non-taxable allowance provided to cover student-athlete housing and lodging expenses. Housing Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "No",
+    "taxDomesticKey": "no",
+    "taxIntlNote": "No",
+    "domesticForm": "-",
+    "domesticKey": "none",
+    "intlForm": "-",
+    "intlKey": "none",
+    "stateDomestic": "Not Required",
+    "stateIntl": "Not Required",
+    "incomeCategory": "N/A",
+    "incomeSubtype": "N/A",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Alston",
+    "brief": "Taxable non-qualified education-related awards authorized under the Supreme Court's Alston ruling.",
+    "full": "Taxable non-qualified education-related awards authorized under the Supreme Court's Alston ruling. Alston income is taxable and will appear on a domestic athlete's 1098-T and an international athlete's 1042-S. Under federal law, Teamworks is not able to issue Form 1098-T. Form 1098-T can only be issued by a university. The 1042-S will be issued by Teamworks if Teamworks was elected as the withholding agent.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "Yes",
+    "taxDomesticKey": "yes",
+    "taxIntlNote": "Yes",
+    "domesticForm": "University reports on 1098-T",
+    "domesticKey": "1098-t",
+    "intlForm": "1042-S, 16-10",
+    "intlKey": "1042-s",
+    "stateDomestic": "",
+    "stateIntl": "",
+    "incomeCategory": "16",
+    "incomeSubtype": "10",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Alston Allowance",
+    "brief": "Non-taxable qualified education-related benefits authorized under the Supreme Court's Alston ruling.",
+    "full": "Non-taxable qualified education-related benefits authorized under the Supreme Court's Alston ruling. Alston Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "No",
+    "taxDomesticKey": "no",
+    "taxIntlNote": "No",
+    "domesticForm": "University reports on 1098-T",
+    "domesticKey": "1098-t",
+    "intlForm": "Not Required",
+    "intlKey": "not-required",
+    "stateDomestic": "Not Required",
+    "stateIntl": "Not Required",
+    "incomeCategory": "N/A",
+    "incomeSubtype": "N/A",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Post-Season Travel Disbursement",
+    "brief": "Taxable payments provided to cover post-season transportation and other travel-related expenses.",
+    "full": "Taxable payments provided to cover post-season transportation and other travel-related expenses. Post-Season Travel Disbursement income is taxable and will appear on a domestic athlete's 1099-K and an international athlete's 1042-S if Teamworks was elected as the withholding agent.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "Yes",
+    "taxDomesticKey": "yes",
+    "taxIntlNote": "Yes",
+    "domesticForm": "1099-K",
+    "domesticKey": "1099-k",
+    "intlForm": "1042-S, 16-4",
+    "intlKey": "1042-s",
+    "stateDomestic": "",
+    "stateIntl": "",
+    "incomeCategory": "16",
+    "incomeSubtype": "4",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Travel Allowance",
+    "brief": "Non-taxable payment provided to cover travel related expenses.",
+    "full": "Non-taxable payment provided to cover travel related expenses. Travel Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "No",
+    "taxDomesticKey": "no",
+    "taxIntlNote": "No",
+    "domesticForm": "-",
+    "domesticKey": "none",
+    "intlForm": "-",
+    "intlKey": "none",
+    "stateDomestic": "Not Required",
+    "stateIntl": "Not Required",
+    "incomeCategory": "N/A",
+    "incomeSubtype": "N/A",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Host Allowance",
+    "brief": "Non-taxable reimbursements to official hosts for expenses during prospective recruit visits.",
+    "full": "Non-taxable reimbursements to official hosts for expenses during prospective recruit visits. Host Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "No",
+    "taxDomesticKey": "no",
+    "taxIntlNote": "No",
+    "domesticForm": "-",
+    "domesticKey": "none",
+    "intlForm": "-",
+    "intlKey": "none",
+    "stateDomestic": "Not Required",
+    "stateIntl": "Not Required",
+    "incomeCategory": "N/A",
+    "incomeSubtype": "N/A",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Reimbursement",
+    "brief": "Non-taxable payments to cover documented out-of-pocket expenses previously incurred.",
+    "full": "Non-taxable payments to cover documented out-of-pocket expenses previously incurred. Reimbursement payments and transactions under this payment type will not be included in tax forms issued by Teamworks.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "No",
+    "taxDomesticKey": "no",
+    "taxIntlNote": "No",
+    "domesticForm": "-",
+    "domesticKey": "none",
+    "intlForm": "-",
+    "intlKey": "none",
+    "stateDomestic": "Not Required",
+    "stateIntl": "Not Required",
+    "incomeCategory": "N/A",
+    "incomeSubtype": "N/A",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Camps Services",
+    "brief": "Taxable payments for camp related services and activities.",
+    "full": "Taxable payments for camp related services and activities. Camps Services income is taxable and will appear on a domestic athlete's 1099-K. Teamworks does not allow international athletes to receive this payment type due to U.S. student Visa restrictions.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "Yes",
+    "preventIntlKey": "yes",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "Yes",
+    "taxDomesticKey": "yes",
+    "taxIntlNote": "We don't support",
+    "domesticForm": "1099-K",
+    "domesticKey": "1099-k",
+    "intlForm": "We don't support",
+    "intlKey": "unsupported",
+    "stateDomestic": "TBD",
+    "stateIntl": "TBD",
+    "incomeCategory": "N/A",
+    "incomeSubtype": "N/A",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Meal Stipend Allowance",
+    "brief": "Non-taxable payments to cover meals.",
+    "full": "Non-taxable allowance provided to cover student-athlete meal expenses. Meal Stipend Allowance payments and transactions under this payment type will not be included in tax forms issued by Teamworks.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "No",
+    "taxDomesticKey": "no",
+    "taxIntlNote": "No",
+    "domesticForm": "-",
+    "domesticKey": "none",
+    "intlForm": "-",
+    "intlKey": "none",
+    "stateDomestic": "Not Required",
+    "stateIntl": "Not Required",
+    "incomeCategory": "N/A",
+    "incomeSubtype": "N/A",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Other Non-Qualified Scholarship Award",
+    "brief": "Taxable non-qualified education-related awards to cover education-related expenses other than tuition, required fees, and course materials.",
+    "full": "Taxable non-qualified education-related awards to cover education-related expenses other than tuition, required fees, and course materials. Other Non-Qualified Scholarship Award income is taxable and will appear on a domestic athlete's 1098-T and an international athlete's 1042-S. Under federal law, Teamworks is not able to issue Form 1098-T. Form 1098-T can only be issued by a university. The 1042-S will be issued by Teamworks if Teamworks was elected as the withholding agent.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "Yes",
+    "taxDomesticKey": "yes",
+    "taxIntlNote": "Yes",
+    "domesticForm": "University reports on 1098-T",
+    "domesticKey": "1098-t",
+    "intlForm": "1042-S, 16-10",
+    "intlKey": "1042-s",
+    "stateDomestic": "Not Required",
+    "stateIntl": "Not Required",
+    "incomeCategory": "16",
+    "incomeSubtype": "10",
+    "processing": "9 AM, 9 PM"
+  },
+  {
+    "name": "Interest Payment",
+    "brief": "Taxable payments for interest accrued by having funds in Teamworks Wallet.",
+    "full": "N/A - not shown to customers",
+    "dropdownLabel": "No",
+    "dropdownKey": "no",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "Yes",
+    "taxDomesticKey": "yes",
+    "taxIntlNote": "Yes",
+    "domesticForm": "1099-INT",
+    "domesticKey": "1099-int",
+    "intlForm": "1042-S, 29-12",
+    "intlKey": "1042-s",
+    "stateDomestic": "TBD",
+    "stateIntl": "TBD",
+    "incomeCategory": "29",
+    "incomeSubtype": "12",
+    "processing": "1st of every month"
+  },
+  {
+    "name": "Other Awards & Prizes",
+    "brief": "Taxable cash awards and prizes recognizing student-athlete milestones and achievements, that are not education-expense scholarships or compensation for services performed.",
+    "full": "Taxable cash awards and prizes recognizing student-athlete milestones and achievements, that are not education-expense scholarships or compensation for services performed. Other Awards & Prizes income is taxable and will appear on a domestic athlete's 1099-K and an international athlete's 1042-S if Teamworks was elected as the withholding agent.",
+    "dropdownLabel": "Yes",
+    "dropdownKey": "yes",
+    "preventIntlLabel": "No",
+    "preventIntlKey": "no",
+    "subtypeRaw": null,
+    "taxDomesticLabel": "Yes",
+    "taxDomesticKey": "yes",
+    "taxIntlNote": "Yes",
+    "domesticForm": "1099-K",
+    "domesticKey": "1099-k",
+    "intlForm": "1042-S, 23-25",
+    "intlKey": "1042-s",
+    "stateDomestic": "",
+    "stateIntl": "",
+    "incomeCategory": "23",
+    "incomeSubtype": "25",
+    "processing": null
+  }
   ];
 
-  function badge(value, yesText, noText) {
-    if (value === 'yes') return `<span class="badge badge-yes">${yesText || 'Yes'}</span>`;
-    if (value === 'no') return `<span class="badge badge-no">${noText || 'No'}</span>`;
-    return `<span class="badge badge-neutral">${value}</span>`;
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function ynBadge(label) {
+    if (label === 'Yes') return `<span class="badge badge-yes">Yes</span>`;
+    if (label === 'No') return `<span class="badge badge-no">No</span>`;
+    return `<span class="badge badge-neutral">${esc(label)}</span>`;
   }
 
   function dropdownBadge(pt) {
-    if (pt.dropdown === 'yes') return '<span class="badge badge-yes">Visible</span>';
-    if (pt.dropdown === 'influencer') return '<span class="badge badge-neutral">Influencer Exchange Only</span>';
-    return '<span class="badge badge-no">Hidden</span>';
-  }
-
-  function intlReqBadge(pt) {
-    return pt.preventIntl === 'yes' ? '<span class="badge badge-no">Restricted</span>' : '<span class="badge badge-yes">Allowed</span>';
+    const cls = pt.dropdownKey === 'yes' ? 'badge-yes' : pt.dropdownKey === 'no' ? 'badge-no' : 'badge-neutral';
+    return `<span class="badge ${cls}">${esc(pt.dropdownLabel)}</span>`;
   }
 
   const tableBody = document.getElementById('tableBody');
@@ -142,21 +541,22 @@
     const mainRow = document.createElement('tr');
     mainRow.className = 'main-row';
     mainRow.dataset.index = i;
-    mainRow.dataset.taxable = pt.taxDomestic;
+    mainRow.dataset.taxable = pt.taxDomesticKey;
     mainRow.dataset.domestic = pt.domesticKey;
-    mainRow.dataset.dropdown = pt.dropdown;
-    mainRow.dataset.intl = pt.preventIntl === 'yes' ? 'restricted' : 'allowed';
-    mainRow.innerHTML = `<td><span class="expand-toggle">+</span></td><td>${pt.name}</td><td class="desc-cell">${pt.brief}</td><td>${badge(pt.taxDomestic)}</td><td>${pt.domesticForm}</td><td>${pt.intlForm}</td><td>${dropdownBadge(pt)}</td><td>${intlReqBadge(pt)}</td>`;
+    mainRow.dataset.dropdown = pt.dropdownKey;
+    mainRow.dataset.preventintl = pt.preventIntlKey;
+    mainRow.innerHTML = `<td><span class="expand-toggle">+</span></td><td>${esc(pt.name)}</td><td class="desc-cell">${esc(pt.brief)}</td><td>${ynBadge(pt.taxDomesticLabel)}</td><td>${esc(pt.domesticForm)}</td><td>${esc(pt.intlForm)}</td><td>${dropdownBadge(pt)}</td><td>${ynBadge(pt.preventIntlLabel)}</td>`;
 
+    const subtypeHtml = pt.subtypeRaw ? esc(pt.subtypeRaw).replace(/\n/g, '<br>') : 'N/A';
     const detailRow = document.createElement('tr');
     detailRow.className = 'detail-row hidden-row';
     detailRow.innerHTML = `<td colspan="8"><div class="details-inner"><div class="details-grid">
-      <div class="detail-block full-desc"><h4>Full Description</h4><p>${pt.full}</p></div>
-      <div class="detail-block"><h4>Payment Sub-Type Associations</h4><div>${pt.subtype || 'N/A'}</div></div>
-      <div class="detail-block"><h4>Federal Tax Reportable (International)</h4><div>${pt.taxIntlNote}</div></div>
-      <div class="detail-block"><h4>State Tax Reportable</h4><div>Domestic: ${pt.stateDomestic}<br>International: ${pt.stateIntl}</div></div>
-      <div class="detail-block"><h4>International Income Code</h4><div>Category: ${pt.incomeCategory}<br>Subtype: ${pt.incomeSubtype}</div></div>
-      <div class="detail-block"><h4>Processing Times (ET)</h4><div>${pt.processing}</div></div>
+      <div class="detail-block full-desc"><h4>Full Description</h4><p>${esc(pt.full)}</p></div>
+      <div class="detail-block"><h4>Payment Sub-Type Associations</h4><div>${subtypeHtml}</div></div>
+      <div class="detail-block"><h4>Federal Tax Reportable (International)</h4><div>${esc(pt.taxIntlNote)}</div></div>
+      <div class="detail-block"><h4>State Tax Reportable</h4><div>Domestic: ${esc(pt.stateDomestic) || '&nbsp;'}<br>International: ${esc(pt.stateIntl) || '&nbsp;'}</div></div>
+      <div class="detail-block"><h4>International Income Code</h4><div>Category: ${esc(pt.incomeCategory)}<br>Subtype: ${esc(pt.incomeSubtype)}</div></div>
+      <div class="detail-block"><h4>Processing Times (ET)</h4><div>${pt.processing ? esc(pt.processing) : '—'}</div></div>
     </div></div></td>`;
 
     mainRow.addEventListener('click', () => {
@@ -169,7 +569,7 @@
     tableBody.appendChild(detailRow);
   });
 
-  let activeTaxable = 'all', activeIntl = 'all', activeDomestic = 'all', activeDropdown = 'all';
+  let activeTaxable = 'all', activePreventIntl = 'all', activeDomestic = 'all', activeDropdown = 'all';
   const pills = document.querySelectorAll('.pill');
   const resultCount = document.getElementById('resultCount');
   const noResults = document.getElementById('noResults');
@@ -177,7 +577,7 @@
   function applyFilters() {
     let visible = 0;
     document.querySelectorAll('tr.main-row').forEach(row => {
-      const show = (activeTaxable === 'all' || row.dataset.taxable === activeTaxable) && (activeIntl === 'all' || row.dataset.intl === activeIntl) && (activeDomestic === 'all' || row.dataset.domestic === activeDomestic) && (activeDropdown === 'all' || row.dataset.dropdown === activeDropdown);
+      const show = (activeTaxable === 'all' || row.dataset.taxable === activeTaxable) && (activePreventIntl === 'all' || row.dataset.preventintl === activePreventIntl) && (activeDomestic === 'all' || row.dataset.domestic === activeDomestic) && (activeDropdown === 'all' || row.dataset.dropdown === activeDropdown);
       row.classList.toggle('hidden-row', !show);
       const detailRow = row.nextElementSibling;
       if (!show) {
@@ -187,12 +587,12 @@
       if (show) visible++;
     });
     noResults.style.display = visible === 0 ? 'block' : 'none';
-    if (activeTaxable === 'all' && activeIntl === 'all' && activeDomestic === 'all' && activeDropdown === 'all') { resultCount.textContent = ''; return; }
+    if (activeTaxable === 'all' && activePreventIntl === 'all' && activeDomestic === 'all' && activeDropdown === 'all') { resultCount.textContent = ''; return; }
     const parts = [];
     if (activeTaxable !== 'all') parts.push(`Taxable: ${activeTaxable === 'yes' ? 'Yes' : 'No'}`);
     if (activeDomestic !== 'all') parts.push(`Domestic Form: ${activeDomestic === 'none' ? 'None' : activeDomestic.toUpperCase()}`);
-    if (activeDropdown !== 'all') parts.push(`Dropdown: ${activeDropdown === 'yes' ? 'Visible' : activeDropdown === 'influencer' ? 'Influencer Exchange Only' : 'Hidden'}`);
-    if (activeIntl !== 'all') parts.push(`Intl. Requests: ${activeIntl === 'allowed' ? 'Allowed' : 'Restricted'}`);
+    if (activeDropdown !== 'all') parts.push(`Dropdown: ${activeDropdown === 'yes' ? 'Yes' : activeDropdown === 'influencer' ? 'Influencer Exchange Only' : 'No'}`);
+    if (activePreventIntl !== 'all') parts.push(`Prevent Intl. Requests: ${activePreventIntl === 'yes' ? 'Yes' : 'No'}`);
     resultCount.innerHTML = `Showing <span>${visible}</span> payment type${visible !== 1 ? 's' : ''} — ${parts.join(' · ')}`;
   }
 
@@ -202,7 +602,7 @@
       document.querySelectorAll(`.pill[data-filter="${filter}"]`).forEach(p => p.classList.remove('active', 'active-all'));
       pill.classList.add(value === 'all' ? 'active-all' : 'active');
       if (filter === 'taxable') activeTaxable = value;
-      if (filter === 'intl') activeIntl = value;
+      if (filter === 'preventintl') activePreventIntl = value;
       if (filter === 'domestic') activeDomestic = value;
       if (filter === 'dropdown') activeDropdown = value;
       applyFilters();

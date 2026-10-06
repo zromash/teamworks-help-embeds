@@ -54,6 +54,8 @@
     ::-webkit-scrollbar { height: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #C5CAD3; border-radius: 2px; }
+    tbody tr.section-header td { font-size: 10px; font-weight: 800; color: var(--text-muted); }
+    tbody tr.section-header td.role-label { text-align: center; letter-spacing: 0.08em; font-weight: 700; }
   </style>
 </head>
 <body>
@@ -90,14 +92,14 @@
       </tr>
     </thead>
     <tbody>
-      <tr class="section-header" data-section="Banking"><td colspan="6">Banking</td></tr>
+      <tr class="section-header" data-section="Banking"><td>Banking</td><td class="role-label">Admin</td><td class="role-label">Approver</td><td class="role-label">Requestor</td><td class="role-label">Bookkeeper</td><td class="role-label">Monitor</td></tr>
       <tr data-section="Banking"><td>View account info, balance and transactions</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td></tr>
       <tr data-section="Banking"><td>Download statements and documents</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td></tr>
       <tr data-section="Banking"><td>Move money to/from external and other Wallet accounts</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="Banking"><td>Send money via ACH/Wire</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="Banking"><td>Deposit checks</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="Banking"><td>Manage external (non-athlete) payment recipients</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
-      <tr class="section-header" data-section="Security"><td colspan="6">Security</td></tr>
+      <tr class="section-header" data-section="Security"><td>Security</td><td class="role-label">Admin</td><td class="role-label">Approver</td><td class="role-label">Requestor</td><td class="role-label">Bookkeeper</td><td class="role-label">Monitor</td></tr>
       <tr data-section="Security"><td>Update account settings</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="Security"><td>Create approval chains per payment type</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="Security"><td>Set the required number of approvers for payment types without an approval chain</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
@@ -105,7 +107,7 @@
       <tr data-section="Security"><td>Upload documents</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="Security"><td>Manage approval chains for payment types</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="Security"><td>Set Per Diem preset amounts</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td></tr>
-      <tr class="section-header" data-section="Athlete Payments"><td colspan="6">Athlete Payments</td></tr>
+      <tr class="section-header" data-section="Athlete Payments"><td>Athlete Payments</td><td class="role-label">Admin</td><td class="role-label">Approver</td><td class="role-label">Requestor</td><td class="role-label">Bookkeeper</td><td class="role-label">Monitor</td></tr>
       <tr data-section="Athlete Payments"><td>View athlete payee recipients</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td></tr>
       <tr data-section="Athlete Payments"><td>Create payment requests</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="Athlete Payments"><td>Approve or deny payment requests originated by another user</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
@@ -119,14 +121,14 @@
       <tr data-section="Athlete Payments"><td>Manage athlete payments</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="Athlete Payments"><td>Export payment transactions</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td></tr>
       <tr data-section="Athlete Payments"><td>Create a Clawback request on a Per Diem payment that was already sent ☨</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td></tr>
-      <tr class="section-header" data-section="User Management"><td colspan="6">User Management</td></tr>
+      <tr class="section-header" data-section="User Management"><td>User Management</td><td class="role-label">Admin</td><td class="role-label">Approver</td><td class="role-label">Requestor</td><td class="role-label">Bookkeeper</td><td class="role-label">Monitor</td></tr>
       <tr data-section="User Management"><td>Invite users</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="User Management"><td>Manage roles and permissions</td><td class="check">✓</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="User Management"><td>View onboarding status of all Wallet users</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
-      <tr class="section-header" data-section="Cards"><td colspan="6">Cards</td></tr>
+      <tr class="section-header" data-section="Cards"><td>Cards</td><td class="role-label">Admin</td><td class="role-label">Approver</td><td class="role-label">Requestor</td><td class="role-label">Bookkeeper</td><td class="role-label">Monitor</td></tr>
       <tr data-section="Cards"><td>Get a card</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
       <tr data-section="Cards"><td>Manage cards</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
-      <tr class="section-header" data-section="Integrations"><td colspan="6">Integrations</td></tr>
+      <tr class="section-header" data-section="Integrations"><td>Integrations</td><td class="role-label">Admin</td><td class="role-label">Approver</td><td class="role-label">Requestor</td><td class="role-label">Bookkeeper</td><td class="role-label">Monitor</td></tr>
       <tr data-section="Integrations"><td>Approve integration with other Teamworks products (e.g., Influencer, GM, Hub, etc.)</td><td class="check">✓*</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td></tr>
     </tbody>
   </table>
